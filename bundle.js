@@ -22392,8 +22392,6 @@
 	
 	var _note_actions = __webpack_require__(190);
 	
-	var _note_actions2 = _interopRequireDefault(_note_actions);
-	
 	var _tones = __webpack_require__(191);
 	
 	var _tones2 = _interopRequireDefault(_tones);
@@ -22402,7 +22400,7 @@
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
-	var keyMap = { 'a': 'C5', 's': 'D5', 'd': 'E5', 'f': 'F5', 'g': 'G5' };
+	var keyMap = { 'KeyA': 'C5', 'KeyS': 'D5', 'KeyD': 'E5', 'KeyF': 'F5', 'KeyG': 'G5' };
 	var validKeys = Object.keys(keyMap);
 	
 	var notes = function notes() {
@@ -22411,15 +22409,16 @@
 	
 	  var pressedKey = action.key;
 	  switch (action.type) {
-	    case _note_actions2.default.KEY_PRESSED:
+	    case _note_actions.NotesConstants.KEY_PRESSED:
 	      if (validKeys.includes(pressedKey) && oldState.includes(keyMap[pressedKey])) {
 	        return oldState;
 	      } else {
 	        return [].concat(_toConsumableArray(oldState), [keyMap[pressedKey]]);
 	      }
-	    case _note_actions2.default.KEY_RELEASED:
+	    case _note_actions.NotesConstants.KEY_RELEASED:
 	      if (validKeys.includes(pressedKey) && oldState.includes(keyMap[pressedKey])) {
-	        return [].concat(_toConsumableArray(oldState)).slice(0, -1);
+	        var newState = [].concat(_toConsumableArray(oldState));
+	        return newState.slice(0, newState.length - 1);
 	      } else {
 	        return oldState;
 	      }
@@ -22446,6 +22445,7 @@
 	
 	var keyPressed = function keyPressed(key) {
 	  return {
+	
 	    type: NotesConstants.KEY_PRESSED,
 	    key: key
 	  };
@@ -22458,9 +22458,9 @@
 	  };
 	};
 	
-	exports.default = NotesConstants;
-	exports.default = keyPressed;
-	exports.default = keyReleased;
+	exports.NotesConstants = NotesConstants;
+	exports.keyPressed = keyPressed;
+	exports.keyReleased = keyReleased;
 
 /***/ },
 /* 191 */
@@ -22480,8 +22480,10 @@
 	};
 	
 	var NOTE_NAMES = Object.keys(TONES);
-	exports.default = TONES;
-	exports.default = NOTE_NAMES;
+	// export default TONES;
+	// export default NOTE_NAMES;
+	exports.TONES = TONES;
+	exports.NOTE_NAMES = NOTE_NAMES;
 
 /***/ },
 /* 192 */
@@ -23276,11 +23278,13 @@
 	
 	var _tones = __webpack_require__(191);
 	
-	var _tones2 = _interopRequireDefault(_tones);
-	
 	var _note = __webpack_require__(172);
 	
 	var _note2 = _interopRequireDefault(_note);
+	
+	var _note_key = __webpack_require__(205);
+	
+	var _note_key2 = _interopRequireDefault(_note_key);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -23293,42 +23297,72 @@
 	var Synth = function (_React$Component) {
 	  _inherits(Synth, _React$Component);
 	
-	  function Synth() {
+	  function Synth(props) {
 	    _classCallCheck(this, Synth);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Synth).call(this));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Synth).call(this, props));
 	
-	    _this.tones = _tones2.default;
-	    _this.noteNames = _tones2.default;
-	    _this.notes = _this.makeNotesArr();
-	
+	    _this.notes = _tones.NOTE_NAMES.map(function (name) {
+	      return new _note2.default(_tones.TONES[name]);
+	    });
+	    _this.onKeyUp = _this.onKeyUp.bind(_this);
+	    _this.onKeyDown = _this.onKeyDown.bind(_this);
+	    _this.playNotes = _this.playNotes.bind(_this);
 	    return _this;
 	  }
 	
 	  _createClass(Synth, [{
-	    key: 'makeNotesArr',
-	    value: function makeNotesArr() {
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
 	      var _this2 = this;
 	
-	      var noteArr = [];
-	      this.noteNames.forEach(function (name) {
-	        noteArr.push(new _note2.default(_this2.tones[name]));
+	      document.addEventListener("keydown", function (e) {
+	        return _this2.onKeyDown(e);
 	      });
-	      return noteArr;
+	      document.addEventListener("keyup", function (e) {
+	        return _this2.onKeyUp(e);
+	      });
+	    }
+	  }, {
+	    key: 'onKeyDown',
+	    value: function onKeyDown(e) {
+	      var keyPushed = e.code.toString();
+	      console.log(keyPushed);
+	      this.props.keyPressed(keyPushed);
+	    }
+	  }, {
+	    key: 'onKeyUp',
+	    value: function onKeyUp(e) {
+	      var keyPulled = e.code.toString();
+	      this.props.keyReleased(keyPulled);
+	    }
+	  }, {
+	    key: 'playNotes',
+	    value: function playNotes() {
+	      var _this3 = this;
+	
+	      _tones.NOTE_NAMES.forEach(function (note, idx) {
+	        if (_this3.props.notes.includes(note)) {
+	          _this3.notes[idx].start();
+	        } else {
+	          _this3.notes[idx].stop();
+	        }
+	      });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var noteList = this.notes.map(function (el) {
+	      var noteList = _tones.NOTE_NAMES.map(function (el, idx) {
 	        return _react2.default.createElement(
 	          'li',
 	          null,
-	          'el'
+	          _react2.default.createElement(_note_key2.default, { noteName: el })
 	        );
 	      });
 	      return _react2.default.createElement(
 	        'ul',
 	        null,
+	        this.playNotes(),
 	        noteList
 	      );
 	    }
@@ -23357,8 +23391,6 @@
 	
 	var _note_actions = __webpack_require__(190);
 	
-	var _note_actions2 = _interopRequireDefault(_note_actions);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var mapsStateToProps = function mapsStateToProps(state) {
@@ -23370,15 +23402,42 @@
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 	  return {
 	    keyPressed: function keyPressed(key) {
-	      return dispatch((0, _note_actions2.default)(key));
+	      return dispatch((0, _note_actions.keyPressed)(key));
 	    },
 	    keyReleased: function keyReleased(key) {
-	      return dispatch((0, _note_actions2.default)(key));
+	      return dispatch((0, _note_actions.keyReleased)(key));
 	    }
 	  };
 	};
 	
 	exports.default = (0, _reactRedux.connect)(mapsStateToProps, mapDispatchToProps)(_synth2.default);
+
+/***/ },
+/* 205 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var NoteKey = function NoteKey(_ref) {
+	  var noteName = _ref.noteName;
+	  return _react2.default.createElement(
+	    'div',
+	    null,
+	    noteName
+	  );
+	};
+	
+	exports.default = NoteKey;
 
 /***/ }
 /******/ ]);

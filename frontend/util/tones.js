@@ -7,5 +7,6 @@ const TONES = {
 };
 
 const NOTE_NAMES = Object.keys(TONES);
-export default TONES;
-export default NOTE_NAMES;
+// export default TONES;
+// export default NOTE_NAMES;
+export { TONES, NOTE_NAMES };

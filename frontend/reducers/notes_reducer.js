@@ -1,8 +1,8 @@
-import NotesConstants from "../actions/note_actions";
+import {NotesConstants, keyPressed, keyReleased} from "../actions/note_actions";
 import TONES from "../util/tones";
 import NOTE_NAMES from "../util/tones";
 
-const keyMap = {'a': 'C5', 's': 'D5', 'd': 'E5', 'f': 'F5', 'g': 'G5'};
+const keyMap = {'KeyA': 'C5', 'KeyS': 'D5', 'KeyD': 'E5', 'KeyF': 'F5', 'KeyG': 'G5'};
 const validKeys = Object.keys(keyMap);
 
 const notes = (oldState = [], action) => {
@@ -16,7 +16,8 @@ const notes = (oldState = [], action) => {
       }
     case NotesConstants.KEY_RELEASED:
       if (validKeys.includes(pressedKey) && oldState.includes(keyMap[pressedKey])){
-        return [...oldState].slice(0, -1);
+        let newState = [...oldState];
+        return newState.slice(0, newState.length - 1);
       } else {
         return oldState;
       }

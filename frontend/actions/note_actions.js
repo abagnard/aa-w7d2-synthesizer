@@ -4,6 +4,7 @@ const NotesConstants = {
 };
 
 const keyPressed = (key) => ({
+
   type: NotesConstants.KEY_PRESSED,
   key
 });
@@ -14,6 +15,5 @@ const keyReleased = (key) => ({
 });
 
 
-export default NotesConstants;
-export default keyPressed;
-export default keyReleased;
+
+export {NotesConstants, keyPressed, keyReleased };
